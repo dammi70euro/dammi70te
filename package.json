@@ -1,8 +1,9 @@
 {
-  "name": "dammi70-te",
+  "name": "dammi70te",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "homepage": "https://dammi70euro.github.io/dammi70te/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

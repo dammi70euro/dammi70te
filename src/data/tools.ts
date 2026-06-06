@@ -14,7 +14,7 @@ export type Category = {
   isTikTok?: boolean;
 };
 
-const LEGACY = '/legacy';
+const LEGACY = `${import.meta.env.BASE_URL}legacy`;
 
 export const categories: Category[] = [
   {

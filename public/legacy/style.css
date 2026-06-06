@@ -7,7 +7,7 @@ body {
   margin: 0;
 
   /* Immagine di sfondo */
-  background: url('dammi70euro.png') no-repeat center center fixed;
+  background: url('../dammi70euro.png') no-repeat center center fixed;
   background-size: cover;
   color: #ffffff;
   position: relative;
