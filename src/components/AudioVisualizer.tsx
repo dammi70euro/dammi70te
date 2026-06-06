@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { useDriveVisualImages, type DriveVisualImage } from '../hooks/useDriveVisualImages';
 import {
-  drawAudioOverlay,
+  drawConcertSpotlights,
+  drawDiscoAudioPulse,
   drawStatusMessage,
   IMAGE_CHANGE_MS,
   loadDriveImage,
-  pickRandomEffect,
   pickRandomImage,
-  renderVisualEffect,
-  type VisualEffect,
+  renderDiscoBase,
 } from '../visual/effects';
 
 type AudioVisualizerProps = {
@@ -37,17 +36,11 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
     y: Math.max(24, (typeof window !== 'undefined' ? window.innerHeight : 800) - DEFAULT_H - 90),
   }));
   const [currentImage, setCurrentImage] = useState<DriveVisualImage | null>(null);
-  const [effect, setEffect] = useState<VisualEffect>('duotone');
   const currentImageRef = useRef<DriveVisualImage | null>(null);
-  const effectRef = useRef<VisualEffect>('duotone');
 
   useEffect(() => {
     currentImageRef.current = currentImage;
   }, [currentImage]);
-
-  useEffect(() => {
-    effectRef.current = effect;
-  }, [effect]);
 
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const resizeRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
@@ -59,11 +52,10 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
   const visible = !dismissed && isPlaying;
 
   const rotateVisual = useCallback(
-    (excludeId?: string, excludeEffect?: VisualEffect) => {
+    (excludeId?: string) => {
       if (!images.length) return;
       const next = pickRandomImage(images, excludeId);
       setCurrentImage(next);
-      setEffect(pickRandomEffect(excludeEffect));
       fadeRef.current = 0;
       void loadDriveImage(next.id).then((img) => {
         if (img) imageRef.current = img;
@@ -76,7 +68,7 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
     if (!visible || !images.length) return;
     rotateVisual();
     const intervalId = window.setInterval(() => {
-      rotateVisual(currentImageRef.current?.id, effectRef.current);
+      rotateVisual(currentImageRef.current?.id);
     }, IMAGE_CHANGE_MS);
     return () => window.clearInterval(intervalId);
   }, [visible, images, rotateVisual]);
@@ -121,27 +113,29 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
     fadeRef.current = Math.min(1, fadeRef.current + 0.04);
     ctx.globalAlpha = fadeRef.current;
 
+    const time = performance.now() * 0.003;
     const analyser = analyserRef.current;
     let energy = 0.35;
+    let frequencyData: Uint8Array<ArrayBuffer> | undefined;
+
     if (analyser) {
       if (!dataRef.current || dataRef.current.length !== analyser.frequencyBinCount) {
         dataRef.current = new Uint8Array(analyser.frequencyBinCount);
       }
-      const data = dataRef.current;
-      analyser.getByteFrequencyData(data);
-      energy = Math.max(0.15, data.reduce((a, b) => a + b, 0) / (data.length * 255));
-      renderVisualEffect(ctx, effect, img, width, height, performance.now() * 0.003, energy);
-      ctx.globalAlpha = 1;
-      drawAudioOverlay(ctx, width, height, data, energy);
+      frequencyData = dataRef.current;
+      analyser.getByteFrequencyData(frequencyData);
+      energy = Math.max(0.15, frequencyData.reduce((a, b) => a + b, 0) / (frequencyData.length * 255));
     } else {
-      const time = performance.now() * 0.003;
       energy = 0.25 + Math.sin(time * 2) * 0.12;
-      renderVisualEffect(ctx, effect, img, width, height, time, energy);
-      ctx.globalAlpha = 1;
     }
 
+    renderDiscoBase(ctx, img, width, height, time, energy);
+    ctx.globalAlpha = 1;
+    drawConcertSpotlights(ctx, width, height, time, energy, frequencyData);
+    drawDiscoAudioPulse(ctx, width, height, energy);
+
     rafRef.current = requestAnimationFrame(draw);
-  }, [analyserRef, effect, error, images.length, loading]);
+  }, [analyserRef, error, images.length, loading]);
 
   useEffect(() => {
     if (!visible) {
@@ -216,7 +210,7 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
   };
 
   const skipVisual = () => {
-    rotateVisual(currentImage?.id, effect);
+    rotateVisual(currentImage?.id);
   };
 
   if (!visible) return null;

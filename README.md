@@ -1,4 +1,4 @@
-# Dattmi 70 Te!
+# Dammi 70 te!
 
 Hub musicale, gaming e strumenti con home React in stile **industrial** e strumenti legacy HTML/JS.
 

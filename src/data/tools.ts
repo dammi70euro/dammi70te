@@ -15,6 +15,7 @@ export type Category = {
 };
 
 const LEGACY = `${import.meta.env.BASE_URL}legacy`;
+const BASE = import.meta.env.BASE_URL;
 
 export const categories: Category[] = [
   {
@@ -33,6 +34,7 @@ export const categories: Category[] = [
     label: 'Tools',
     icon: '🛠️',
     items: [
+      { label: '🎨 VISUATRON', page: `${BASE}visuatron.html` },
       { label: '📸 Fototron 📷', page: `${LEGACY}/fototron.html` },
       { label: 'Kaustitron 💊', page: `${LEGACY}/Kaustitron.html` },
       { label: 'Campionatron 🔝🎛️🧱', page: `${LEGACY}/Campionatron.html` },
