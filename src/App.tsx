@@ -8,6 +8,7 @@ import { SongSearch } from './components/SongSearch';
 import { ToolFrame } from './components/ToolFrame';
 import { ToolGrid } from './components/ToolGrid';
 import { AudioVisualizer } from './components/AudioVisualizer';
+import { CollapsiblePanel } from './components/CollapsiblePanel';
 import { TrackList } from './components/TrackList';
 import type { CategoryId } from './data/tools';
 
@@ -52,12 +53,7 @@ export default function App() {
       <Header />
 
       <main className="app__main">
-        <section className="panel panel--music">
-          <div className="panel__header">
-            <span className="panel__tag">AUDIO UNIT</span>
-            <span className="panel__id">DM70-AU-01</span>
-          </div>
-
+        <CollapsiblePanel tag="AUDIO UNIT" id="DM70-AU-01" className="panel--music">
           <SongSearch
             value={searchQuery}
             onChange={setSearchQuery}
@@ -82,14 +78,9 @@ export default function App() {
             onPlay={playTrack}
             onShare={shareTrack}
           />
-        </section>
+        </CollapsiblePanel>
 
-        <section className="panel panel--tools">
-          <div className="panel__header">
-            <span className="panel__tag">TOOL DECK</span>
-            <span className="panel__id">DM70-TD-02</span>
-          </div>
-
+        <CollapsiblePanel tag="TOOL DECK" id="DM70-TD-02" className="panel--tools">
           <CategoryTabs active={activeCategory} onChange={setActiveCategory} />
 
           <ToolGrid
@@ -105,7 +96,7 @@ export default function App() {
               onClose={() => setEmbeddedTool(null)}
             />
           )}
-        </section>
+        </CollapsiblePanel>
       </main>
 
       <EmbedToggle checked={embedMode} onChange={handleEmbedModeChange} />

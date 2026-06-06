@@ -35,6 +35,7 @@ jobs:
         env:
           VITE_DRIVE_API_KEY: ${{ secrets.VITE_DRIVE_API_KEY }}
           VITE_DRIVE_FOLDER_ID: ${{ secrets.VITE_DRIVE_FOLDER_ID }}
+          VITE_DRIVE_VISUAL_FOLDER_ID: ${{ secrets.VITE_DRIVE_VISUAL_FOLDER_ID }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,4 +1,4 @@
-# Dammi 70 euro
+# Dattmi 70 Te!
 
 Hub musicale, gaming e strumenti con home React in stile **industrial** e strumenti legacy HTML/JS.
 

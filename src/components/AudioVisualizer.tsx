@@ -1,4 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useDriveVisualImages, type DriveVisualImage } from '../hooks/useDriveVisualImages';
+import {
+  drawAudioOverlay,
+  drawStatusMessage,
+  IMAGE_CHANGE_MS,
+  loadDriveImage,
+  pickRandomEffect,
+  pickRandomImage,
+  renderVisualEffect,
+  type VisualEffect,
+} from '../visual/effects';
 
 type AudioVisualizerProps = {
   analyserRef: RefObject<AnalyserNode | null>;
@@ -8,13 +19,16 @@ type AudioVisualizerProps = {
 
 const MIN_W = 200;
 const MIN_H = 140;
-const DEFAULT_W = 300;
-const DEFAULT_H = 200;
+const DEFAULT_W = 320;
+const DEFAULT_H = 220;
 
 export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisualizerProps) {
+  const { images, loading, error } = useDriveVisualImages();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const dataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const fadeRef = useRef(1);
 
   const [dismissed, setDismissed] = useState(false);
   const [size, setSize] = useState({ w: DEFAULT_W, h: DEFAULT_H });
@@ -22,6 +36,19 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
     x: 24,
     y: Math.max(24, (typeof window !== 'undefined' ? window.innerHeight : 800) - DEFAULT_H - 90),
   }));
+  const [currentImage, setCurrentImage] = useState<DriveVisualImage | null>(null);
+  const [effect, setEffect] = useState<VisualEffect>('duotone');
+  const currentImageRef = useRef<DriveVisualImage | null>(null);
+  const effectRef = useRef<VisualEffect>('duotone');
+
+  useEffect(() => {
+    currentImageRef.current = currentImage;
+  }, [currentImage]);
+
+  useEffect(() => {
+    effectRef.current = effect;
+  }, [effect]);
+
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const resizeRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
 
@@ -31,87 +58,90 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
 
   const visible = !dismissed && isPlaying;
 
+  const rotateVisual = useCallback(
+    (excludeId?: string, excludeEffect?: VisualEffect) => {
+      if (!images.length) return;
+      const next = pickRandomImage(images, excludeId);
+      setCurrentImage(next);
+      setEffect(pickRandomEffect(excludeEffect));
+      fadeRef.current = 0;
+      void loadDriveImage(next.id).then((img) => {
+        if (img) imageRef.current = img;
+      });
+    },
+    [images],
+  );
+
+  useEffect(() => {
+    if (!visible || !images.length) return;
+    rotateVisual();
+    const intervalId = window.setInterval(() => {
+      rotateVisual(currentImageRef.current?.id, effectRef.current);
+    }, IMAGE_CHANGE_MS);
+    return () => window.clearInterval(intervalId);
+  }, [visible, images, rotateVisual]);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    const analyser = analyserRef.current;
-    if (!canvas || !analyser) {
+    if (!canvas) {
       rafRef.current = requestAnimationFrame(draw);
       return;
     }
 
-    if (!dataRef.current || dataRef.current.length !== analyser.frequencyBinCount) {
-      dataRef.current = new Uint8Array(analyser.frequencyBinCount);
-    }
-    const data = dataRef.current;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    analyser.getByteFrequencyData(data);
 
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
 
-    const time = performance.now() * 0.003;
-    const rawEnergy = data.reduce((a, b) => a + b, 0) / (data.length * 255);
-    const energy = rawEnergy > 0.02 ? rawEnergy : 0.25 + Math.sin(time * 2) * 0.12;
-
-    const barCount = 48;
-    const step = Math.max(1, Math.floor(data.length / barCount));
-    const gap = 2;
-    const barW = (width - gap * (barCount - 1)) / barCount;
-
-    for (let i = 0; i < barCount; i++) {
-      let sum = 0;
-      for (let j = 0; j < step; j++) {
-        sum += data[i * step + j];
-      }
-      const avg = sum / step / 255;
-      const wave = (Math.sin(time * 3 + i * 0.35) + 1) * 0.5;
-      const level = Math.max(avg, rawEnergy > 0.02 ? 0 : energy * wave * 0.55);
-      const barH = Math.max(6, level * height * 0.9);
-
-      const x = i * (barW + gap);
-      const y = height - barH;
-
-      const grad = ctx.createLinearGradient(0, height, 0, y);
-      grad.addColorStop(0, 'rgba(0, 229, 255, 0.95)');
-      grad.addColorStop(0.55, 'rgba(245, 166, 35, 0.9)');
-      grad.addColorStop(1, 'rgba(255, 213, 79, 1)');
-
-      ctx.fillStyle = grad;
-      ctx.fillRect(x, y, barW, barH);
-
-      if (level > 0.35) {
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = 'rgba(0, 229, 255, 0.65)';
-        ctx.fillRect(x, y, barW, 3);
-        ctx.shadowBlur = 0;
-      }
+    if (loading) {
+      drawStatusMessage(ctx, width, height, 'Caricamento\nPatrimonio_visivo…');
+      rafRef.current = requestAnimationFrame(draw);
+      return;
     }
 
-    const cx = width / 2;
-    const cy = height * 0.38;
-    const baseR = Math.min(width, height) * 0.14;
-    const pulse = Math.max(
-      data.slice(0, 12).reduce((a, b) => a + b, 0) / (12 * 255),
-      rawEnergy > 0.02 ? 0 : energy,
-    );
-    const r = baseR + pulse * baseR * 2;
+    if (error || !images.length) {
+      drawStatusMessage(
+        ctx,
+        width,
+        height,
+        error ?? 'Nessuna immagine\ndisponibile',
+      );
+      rafRef.current = requestAnimationFrame(draw);
+      return;
+    }
 
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0, 229, 255, ${0.3 + pulse * 0.55})`;
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
+    const img = imageRef.current;
+    if (!img) {
+      drawStatusMessage(ctx, width, height, 'Preparazione\nimmagine…');
+      rafRef.current = requestAnimationFrame(draw);
+      return;
+    }
 
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.5 + Math.sin(time * 4) * 3, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(245, 166, 35, ${0.2 + pulse * 0.4})`;
-    ctx.fill();
+    fadeRef.current = Math.min(1, fadeRef.current + 0.04);
+    ctx.globalAlpha = fadeRef.current;
+
+    const analyser = analyserRef.current;
+    let energy = 0.35;
+    if (analyser) {
+      if (!dataRef.current || dataRef.current.length !== analyser.frequencyBinCount) {
+        dataRef.current = new Uint8Array(analyser.frequencyBinCount);
+      }
+      const data = dataRef.current;
+      analyser.getByteFrequencyData(data);
+      energy = Math.max(0.15, data.reduce((a, b) => a + b, 0) / (data.length * 255));
+      renderVisualEffect(ctx, effect, img, width, height, performance.now() * 0.003, energy);
+      ctx.globalAlpha = 1;
+      drawAudioOverlay(ctx, width, height, data, energy);
+    } else {
+      const time = performance.now() * 0.003;
+      energy = 0.25 + Math.sin(time * 2) * 0.12;
+      renderVisualEffect(ctx, effect, img, width, height, time, energy);
+      ctx.globalAlpha = 1;
+    }
 
     rafRef.current = requestAnimationFrame(draw);
-  }, [analyserRef]);
+  }, [analyserRef, effect, error, images.length, loading]);
 
   useEffect(() => {
     if (!visible) {
@@ -121,7 +151,7 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
 
     rafRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [visible, draw, size]);
+  }, [visible, draw, size, currentImage]);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -185,9 +215,14 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
     }));
   };
 
+  const skipVisual = () => {
+    rotateVisual(currentImage?.id, effect);
+  };
+
   if (!visible) return null;
 
   const canvasH = size.h - 36;
+  const headerTitle = currentImage?.name ?? trackName ?? 'Patrimonio_visivo';
 
   return (
     <div
@@ -201,10 +236,13 @@ export function AudioVisualizer({ analyserRef, isPlaying, trackName }: AudioVisu
         aria-label="Controlli visualizer"
       >
         <span className="audio-viz__tag">VISUAL</span>
-        <span className="audio-viz__title" title={trackName}>
-          {trackName ?? 'Audio'}
+        <span className="audio-viz__title" title={headerTitle}>
+          {headerTitle}
         </span>
         <div className="audio-viz__controls">
+          <button type="button" className="audio-viz__btn" onClick={skipVisual} title="Prossima immagine">
+            ↻
+          </button>
           <button type="button" className="audio-viz__btn" onClick={enlarge} title="Ingrandisci">
             +
           </button>

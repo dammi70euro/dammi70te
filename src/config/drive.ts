@@ -1,5 +1,7 @@
 const DEFAULT_DRIVE_API_KEY = 'AIzaSyCsKsvTqnlnDD94CYef0diL_M0jZ4HqjTk';
 const DEFAULT_DRIVE_FOLDER_ID = '1JdLjxDa8xNTDYJgUCGLurORSbW0pXUAn';
+const DEFAULT_DRIVE_VISUAL_FOLDER_ID = '1oXtFShI1aHryPNG-AmwufIkd9LS91q8g';
+export const DRIVE_VISUAL_FOLDER_NAME = 'Patrimonio_visivo';
 
 function envOrDefault(value: string | undefined, fallback: string): string {
   const trimmed = value?.trim();
@@ -13,6 +15,10 @@ export const DRIVE_API_KEY = envOrDefault(
 export const DRIVE_FOLDER_ID = envOrDefault(
   import.meta.env.VITE_DRIVE_FOLDER_ID,
   DEFAULT_DRIVE_FOLDER_ID,
+);
+export const DRIVE_VISUAL_FOLDER_ID = envOrDefault(
+  import.meta.env.VITE_DRIVE_VISUAL_FOLDER_ID,
+  DEFAULT_DRIVE_VISUAL_FOLDER_ID,
 );
 
 export function driveMediaUrl(fileId: string): string {
