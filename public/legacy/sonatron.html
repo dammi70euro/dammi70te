@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonatron</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f7fa, #b3e5fc);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .device {
+            background: #e0e0e0;
+            border-radius: 20px;
+            width: 300px;
+            height: 650px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .screen {
+            background: #2196f3;
+            border-radius: 10px;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 10px;
+        }
+
+        .bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+            width: 100%;
+            height: 100%;
+            margin-top: 10px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #81d4fa;
+            border-radius: 2px;
+            transition: height 0.1s;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #1976d2;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            width: 80%;
+        }
+
+        .nav-button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #1976d2;
+        }
+
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.5s ease, font-size 0.3s, color 0.3s;
+        }
+
+        .warning {
+            font-size: 28px;
+            color: #FF0000;
+            font-weight: bold;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        .expand {
+            animation: expand 0.5s ease-in-out;
+        }
+
+        @keyframes expand {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Style per gli slider */
+        .slider-container {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .slider {
+            width: 100%;
+        }
+
+        .slider-label {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Quadrato per il valore decibel */
+        .value-box {
+            background-color: #ffeb3b;
+            color: #212121;
+            font-size: 24px;
+            font-weight: bold;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="screen">
+            <h2>Sonatron</h2>
+            <div class="bars" id="bars">
+                <!-- Dynamic bars for decibels -->
+                <div class="bar" style="height: 10%;"></div>
+                <div class="bar" style="height: 20%;"></div>
+                <div class="bar" style="height: 30%;"></div>
+                <div class="bar" style="height: 40%;"></div>
+                <div class="bar" style="height: 50%;"></div>
+                <div class="bar" style="height: 60%;"></div>
+                <div class="bar" style="height: 70%;"></div>
+                <div class="bar" style="height: 80%;"></div>
+            </div>
+        </div>
+
+        <!-- Testo che cambia dinamicamente -->
+        <div id="message" class="message">Bassi Buoni</div>
+
+        <!-- Quadrato per il valore decibel -->
+        <div id="decibelValue" class="value-box">0</div>
+
+        <div class="controls">
+            <button class="button" id="startButton">Start</button>
+            <button class="button" id="stopButton">Stop</button>
+        </div>
+
+        <button class="button" onclick="window.location.href='index.html'">🛏️ Vai a Letto</button>
+
+        <div class="navigation">
+            <button class="nav-button">Previous</button>
+            <button class="nav-button">Next</button>
+        </div>
+
+        <!-- Slider per sensibilità Bassi Cattivi -->
+        <div class="slider-container">
+            <div class="slider-label">Bassi Cattivi Sensibilità</div>
+            <input type="range" id="badBassSlider" class="slider" min="20" max="70" value="110">
+        </div>
+
+    </div>
+
+    <script>
+	const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const bars = document.querySelectorAll('.bar');
+const message = document.getElementById('message');
+const badBassSlider = document.getElementById('badBassSlider');  // Slider per sensibilità bassi cattivi
+const decibelValue = document.getElementById('decibelValue');  // Quadrato per il valore decibel
+
+let audioContext;
+let analyser;
+let microphone;
+let animationFrame;
+
+// Funzione per inizializzare il misuratore di decibel
+async function startDecibelMeter() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;  // Impostazione della dimensione dell'analizzatore
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    function updateBars() {
+        analyser.getByteFrequencyData(dataArray);
+        bars.forEach((bar, index) => {
+            const value = dataArray[index] || 0;
+            bar.style.height = `${(value / 255) * 100}%`;
+        });
+        
+        // Recupera il valore medio dal microfono (decibel)
+        let sum = 0;
+        dataArray.forEach(value => sum += value);
+        const average = sum / dataArray.length;
+
+        // Imposta il valore per la visualizzazione
+        updateMessage(average); // Passiamo il valore medio per aggiornare il messaggio
+
+        animationFrame = requestAnimationFrame(updateBars); // Continua l'animazione
+    }
+
+    updateBars(); // Inizia l'aggiornamento dei dati
+}
+
+// Funzione per fermare il misuratore di decibel
+function stopDecibelMeter() {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    if (audioContext) audioContext.close();
+}
+
+startButton.addEventListener('click', startDecibelMeter);
+stopButton.addEventListener('click', stopDecibelMeter);
+
+// Funzione per aggiornare il messaggio e il valore decibel in tempo reale
+function updateMessage(value) {
+    const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
+
+    if (value >= 0 && value <= 10) {
+        message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
+    } else if (value > 10 && value <= badBassThreshold) {
+        message.textContent = 'Bassi Buoni';
+        message.classList.remove('warning', 'expand');
+        message.classList.add('expand');
+        message.style.color = '#4CAF50'; // Verde per i bassi buoni
+    } else if (value > badBassThreshold) {
+        message.textContent = '⚠️ BASSI CATTIVI ⚠️';
+        message.classList.add('warning', 'expand');
+        message.style.color = '#FF0000'; // Rosso per i bassi cattivi
+    }
+
+    // Aggiorna il valore nel quadrato
+    decibelValue.textContent = Math.floor(value); // Visualizza il valore decibel nel quadrato
+}
+
+
+    </script>
+</body>
+</html>

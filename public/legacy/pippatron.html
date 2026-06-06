@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+	
+	
+		body {
+            background: linear-gradient(135deg, #121212, #1e1e1e);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .synth-container {
+            text-align: center;
+        }
+
+        .power-button {
+            background: linear-gradient(135deg, #ff5757, #ff3333);
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .power-button.on {
+            background: linear-gradient(135deg, #57ff57, #33ff33);
+        }
+
+        .synth-panel {
+            background: rgba(50, 50, 50, 0.9);
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .knob {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #333, #111);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            margin: 10px auto;
+        }
+
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: white;
+            transform-origin: bottom;
+            transform: translate(-50%, -100%) rotate(0deg);
+        }
+
+        .label {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .synth-panel {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 15px;
+            width: 800px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .jack {
+            width: 30px;
+            height: 30px;
+            background: silver;
+            border-radius: 50%;
+            border: 2px solid #666;
+            cursor: pointer;
+        }
+        
+        .knob {
+            width: 50px;
+            height: 50px;
+            background: #222;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: white;
+            transform-origin: bottom;
+            transform: translate(-50%, -100%) rotate(0deg);
+        }
+        
+        .label {
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .volume-knob {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .volume-labels {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 10px;
+        }
+
+        .power-button {
+            background: #ff3333;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .power-button.on {
+            background: #33ff33;
+        }
+		
+		.back-button {
+            background: linear-gradient(135deg, #5757ff, #3333ff);
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+		.rotating-image {
+        position: fixed;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: url('dammi70euro2.png') no-repeat center/cover;
+        animation: float 10s infinite linear;
+    }
+
+    @keyframes float {
+        0% {
+            top: 100%;
+            left: 10%;
+        }
+        25% {
+            top: 70%;
+            left: 50%;
+        }
+        50% {
+            top: 30%;
+            left: 90%;
+        }
+        75% {
+            top: 50%;
+            left: 30%;
+        }
+        100% {
+            top: 100%;
+            left: 10%;
+        }
+    }
+    @keyframes spin {
+        from {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+		
+    </style>
+</head>
+<body>
+    <div class="synth-container">
+		<div class="rotating-image"></div>
+        <button class="power-button">POWER</button>
+		
+        <div class="synth-panel">
+            <!-- VCO Section -->
+			
+            <div class="control-group">
+                <div class="label">VCO 1</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="frequency"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <div class="control-group">
+                <div class="label">FREQ</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="detune"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <div class="control-group">
+                <div class="label">FILTER</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="filter"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="control-group">
+                <div class="label">CUTOFF FREQ</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="cutoff"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <!-- Envelope Section -->
+            <div class="control-group">
+                <div class="label">ENVELOPE</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="envelope"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <!-- Volume Section -->
+            <div class="control-group">
+                <div class="label">VOLUME</div>
+                <div class="knob volume-knob" data-parameter="volume">
+                    <div class="volume-labels">
+                        <span>0</span>
+                        <span>10</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Output Section -->
+            <div class="control-group">
+                <div class="label">OUTPUT</div>
+                <div class="jack"></div>
+            </div>
+        </div>
+		  <button class="back-button" onclick="window.location.href='index.html'">Vai a Letto</button>
+    </div>
+
+    <script>
+        class Synth {
+            constructor() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.isPlaying = false;
+                
+                // Oscillator
+                this.oscillator = this.audioContext.createOscillator();
+                this.oscillator.type = 'sawtooth';
+                this.oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+                
+                // Filter
+                this.filter = this.audioContext.createBiquadFilter();
+                this.filter.type = 'lowpass';
+                this.filter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
+                
+                // Gain (volume)
+                this.gainNode = this.audioContext.createGain();
+                this.gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+                
+                // Connect the nodes
+                this.oscillator.connect(this.filter);
+                this.filter.connect(this.gainNode);
+                this.gainNode.connect(this.audioContext.destination);
+                
+                // Start the oscillator
+                this.oscillator.start();
+            }
+            
+            setParameter(parameter, value) {
+                switch(parameter) {
+                    case 'frequency':
+                        // Map 0-1 to 20-2000 Hz logarithmically
+                        const freq = Math.pow(2000, value) * 20;
+                        this.oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                        break;
+                        
+                    case 'detune':
+                        // Map 0-1 to -100 to +100 cents
+                        this.oscillator.detune.setValueAtTime((value * 200 - 100), this.audioContext.currentTime);
+                        break;
+                        
+                    case 'filter':
+                        // Map 0-1 to 20-20000 Hz logarithmically
+                        const filterFreq = Math.pow(20000, value) * 20;
+                        this.filter.frequency.setValueAtTime(filterFreq, this.audioContext.currentTime);
+                        break;
+                        
+                    case 'volume':
+                        // Map 0-1 to 0-1 with logarithmic scaling for more natural volume control
+                        this.gainNode.gain.setValueAtTime(Math.pow(value, 2), this.audioContext.currentTime);
+                        break;
+                }
+            }
+            
+            start() {
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                this.isPlaying = true;
+                this.gainNode.gain.value = 0.5;
+            }
+            
+            stop() {
+                this.isPlaying = false;
+                this.gainNode.gain.value = 0;
+            }
+        }
+
+        // Initialize synth
+        let synth = new Synth();
+        
+        // Power button handling
+        const powerButton = document.querySelector('.power-button');
+        let isPowerOn = false;
+        
+        powerButton.addEventListener('click', () => {
+            isPowerOn = !isPowerOn;
+            powerButton.classList.toggle('on');
+            if (isPowerOn) {
+                powerButton.textContent = 'POWER ON';
+                synth.start();
+            } else {
+                powerButton.textContent = 'POWER OFF';
+                synth.stop();
+            }
+        });
+
+        // Knob interaction
+        document.querySelectorAll('.knob').forEach(knob => {
+            let rotating = false;
+            let startY;
+            let currentRotation = 0;
+            let currentValue = 0;
+            
+            const parameter = knob.dataset.parameter;
+            
+            knob.addEventListener('mousedown', (e) => {
+                rotating = true;
+                startY = e.clientY;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!rotating) return;
+                
+                const deltaY = startY - e.clientY;
+                
+                // Update rotation (visual)
+                currentRotation = Math.max(-150, Math.min(150, currentRotation + deltaY/2));
+                knob.style.transform = `rotate(${currentRotation}deg)`;
+                
+                // Update value (audio)
+                currentValue = Math.max(0, Math.min(1, currentValue + deltaY/200));
+                if (isPowerOn) {
+                    synth.setParameter(parameter, currentValue);
+                }
+                
+                startY = e.clientY;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                rotating = false;
+            });
+        });
+
+		
+
+		
+    </script>
+</body>
+</html>

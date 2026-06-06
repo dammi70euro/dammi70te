@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Campionatron - MPC Style</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.css" />
+
+
+  <link rel="stylesheet" href="Campionatron.css">
+</head>
+<body>
+  <div class="mpc-container">
+    <h1>Campionatron <span>🎛️</span></h1>
+    <p class="subtitle">Sampler Style <strong>Akai MPC</strong> con Effetti Reali</p>
+    
+    <div class="record-section">
+      <button id="start-recording">🔴 Rec (Mic)</button>
+      <button id="start-other-tab-recording">🔴 Rec (Altra scheda)</button>
+      <button id="stop-recording" disabled>🛑 Stop</button>
+    </div>
+
+    <canvas id="waveform" width="600" height="150"></canvas>
+
+    <div class="play-section">
+	<div class="slider-container">
+  <label for="audio-range">Seleziona intervallo</label>
+  <div id="audio-range"></div>
+  <span id="start-time">Start: 0s</span>
+  <span id="end-time">End: 0s</span>
+</div>
+      <button id="playback" disabled>▶️ Play</button>
+      <button id="stop-playback" disabled>⏹ Stop</button>
+      <button id="loop-toggle" disabled>🔁 Loop Off</button>
+    </div>
+
+    <div class="knobs-panel">
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="time-stretch">Time Stretch</label>
+          <span id="time-stretch-value" class="slider-value">1</span>
+        </div>
+        <input
+          type="range"
+          id="time-stretch"
+          min="0.5"
+          max="2"
+          step="0.01"
+          value="1"
+          oninput="document.getElementById('time-stretch-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="delay">Delay</label>
+          <span id="delay-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="delay"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('delay-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="reverb">Reverb</label>
+          <span id="reverb-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="reverb"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('reverb-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="distortion">Distorsion</label>
+          <span id="distortion-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="distortion"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('distortion-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="gain">Gain</label>
+          <span id="gain-value" class="slider-value">1</span>
+        </div>
+        <input
+          type="range"
+          id="gain"
+          min="0"
+          max="2"
+          step="0.01"
+          value="1"
+          oninput="document.getElementById('gain-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="flanger">Flanger</label>
+          <span id="flanger-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="flanger"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('flanger-value').textContent = this.value"
+        >
+      </div>
+
+      <div class="knob-group">
+        <div class="slider-label">
+          <label for="bitcrusher">Bitcrusher</label>
+          <span id="bitcrusher-value" class="slider-value">16</span>
+        </div>
+        <input
+          type="range"
+          id="bitcrusher"
+          min="1"
+          max="16"
+          step="1"
+          value="16"
+          oninput="document.getElementById('bitcrusher-value').textContent = this.value"
+        >
+      </div>
+    </div>
+
+    <button id="download" disabled>💾 Download WAV</button>
+    <button id="go-to-bed" class="spectacular-button" onclick="window.location.href='index.html'">
+      Vai a letto 🛌💤
+    </button>
+  </div>
+
+  <script src="Campionatron.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.js"></script>
+</body>
+</html>

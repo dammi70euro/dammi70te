@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sintetizzatore</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .synth-container {
+      text-align: center;
+      background: #1d1d1d;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+      width: 80%;
+    }
+
+    .step-sequencer {
+      margin-top: 20px;
+    }
+
+    .step-group {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .step {
+      width: 30px;
+      height: 30px;
+      background: #222;
+      border: 1px solid #555;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .step.active {
+      background: #00b0ff;
+    }
+
+    .sequencer-controls {
+      margin-top: 10px;
+    }
+
+    .sequencer-controls label {
+      margin-right: 10px;
+    }
+
+    .play-button, .back-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .play-button {
+      background: #00b0ff;
+      color: white;
+    }
+
+    .play-button:hover {
+      background: #0091cc;
+    }
+
+    .back-button {
+      background: #ff5722;
+      color: white;
+    }
+
+    .back-button:hover {
+      background: #e64a19;
+    }
+
+    .tempo-slider-container {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .tempo-slider {
+      width: 50%;
+    }
+	
+	  .nudge-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .nudge-button {
+    background: #00b0ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+    .nudge-button:hover {
+    background: #0091cc;
+  }
+	
+	.step.current {
+  box-shadow: 0 0 30px 15px rgba(138, 43, 226, 0.9); /* Viola più intenso e marcato */
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transform: scale(1.1); /* Leggero ingrandimento per enfatizzare l'effetto */
+}
+
+  </style>
+</head>
+<body>
+  <div class="synth-container">
+    <h1>SOGNOTRON</h1>
+	
+	
+	
+	
+	 <div class="control">
+      <label for="vco1">VCO1 Pitch:</label>
+      <input type="range" id="vco1" min="0" max="100" value="50">
+      <label for="vco1Lfo">LFO:</label>
+      <input type="checkbox" id="vco1Lfo">
+      <label for="vco1LfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vco1LfoAmp" min="0" max="100" value="50">
+      <label for="vco1LfoRate">LFO Rate:</label>
+      <input type="range" id="vco1LfoRate" min="0" max="100" value="50">
+    </div>
+    <div class="control">
+      <label for="vco2">VCO2 Pitch:</label>
+      <input type="range" id="vco2" min="0" max="100" value="50">
+      <label for="vco2Lfo">LFO:</label>
+      <input type="checkbox" id="vco2Lfo">
+      <label for="vco2LfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vco2LfoAmp" min="0" max="100" value="50">
+      <label for="vco2LfoRate">LFO Rate:</label>
+      <input type="range" id="vco2LfoRate" min="0" max="100" value="50">
+    </div>
+    <div class="control">
+      <label for="vcf">VCF Cutoff:</label>
+      <input type="range" id="vcf" min="0" max="100" value="50">
+      <label for="vcfLfo">LFO:</label>
+      <input type="checkbox" id="vcfLfo">
+      <label for="vcfLfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vcfLfoAmp" min="0" max="100" value="50">
+      <label for="vcfLfoRate">LFO Rate:</label>
+      <input type="range" id="vcfLfoRate" min="0" max="100" value="50">
+    </div>
+    <div class="control">
+      <label for="decay">Decay:</label>
+      <input type="range" id="decay" min="0" max="5" step="0.1" value="1">
+      <label for="decayLfo">LFO:</label>
+      <input type="checkbox" id="decayLfo">
+      <label for="decayLfoAmp">LFO Amplitude:</label>
+      <input type="range" id="decayLfoAmp" min="0" max="100" value="50">
+      <label for="decayLfoRate">LFO Rate:</label>
+      <input type="range" id="decayLfoRate" min="0" max="100" value="50">
+    </div>
+
+    <div class="tempo-slider-container">
+      <label for="tempoSlider">Tempo:</label>
+      <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
+      <span id="tempoValue">120 BPM</span>
+    </div>
+	<div class="nudge-buttons">
+  <button id="nudgeLeft" class="nudge-button">⬅️⏱️</button>
+  <button id="nudgeRight" class="nudge-button">⏱️➡️</button>
+</div>
+    <div class="step-sequencer">
+      <h2>Step Sequencer</h2>
+	  
+	  
+		<div class="control">
+			<label for="gainControl">Gain:</label>
+			<input type="range" id="gainControl" min="0" max="1" step="0.01" value="0.5">
+		</div>
+
+
+      <div id="sequencer" class="step-group"></div>
+      <div id="sequencer2" class="step-group"></div>
+      <div class="sequencer-controls">
+        <label for="randomFill">Randomizzazione:</label>
+        <input type="range" id="randomFill" min="0" max="100" value="50">
+        <button id="randomize">🎲 Random</button>
+        <button id="clear">❌ Cancella</button>
+      </div>
+    </div>
+
+    <button class="play-button" id="playButton">Play</button>
+    <button class="back-button" onclick="window.location.href='index.html'">Vai a Letto</button>
+  </div>
+  <script src="synt.js"></script>
+</body>
+
+</html>

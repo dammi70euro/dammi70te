@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drum Machine Generativa</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #121212;
+      color: #ffffff;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .random-image {
+      position: absolute;
+      opacity: 0.1;
+      animation: float 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-30px);
+      }
+    }
+
+    .vinyl {
+      position: absolute;
+      width: calc(120%); /* Dimensione dinamica aggiornata via JavaScript */
+      height: calc(120%); /* Dimensione dinamica aggiornata via JavaScript */
+      border-radius: 50%;
+      overflow: hidden;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+      animation: none;
+      border: 10px solid #000; /* Contorno nero */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    .vinyl-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .vinyl.playing {
+      animation: spin var(--spin-duration, 10s) linear infinite; /* Nessuno spostamento */
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .content {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      overflow-y: auto;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    h1, h2 {
+      color: gold;
+      margin: 10px 0;
+    }
+
+    .controls {
+      margin: 15px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tempo-slider-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tempo-slider {
+      flex: 1;
+    }
+
+    .tempo-value {
+      color: #00b0ff;
+      font-weight: bold;
+    }
+
+    .steps-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .steps-buttons button {
+      background: #00b0ff;
+      color: #fff;
+      font-size: 0.9em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 8px 15px;
+    }
+
+    .steps-buttons button:hover {
+      background: #0091cc;
+    }
+
+    .drum-machine {
+      margin: 20px 0;
+      background: #1d1d1d;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .instrument-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .instrument-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .instrument-label {
+      text-align: left;
+      font-weight: bold;
+    }
+
+    .pattern-button {
+      background: #00b0ff;
+      color: #fff;
+      font-size: 0.8em;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .pattern-button:hover {
+      background: #0091cc;
+    }
+
+    .step-group {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .step-number {
+      font-size: 0.6em;
+      color: #aaa;
+    }
+
+    .step {
+      width: 25px;
+      height: 25px;
+      border: 1px solid #555;
+      border-radius: 50%;
+      background: #222;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.1s, transform 0.1s;
+    }
+
+    .step.active {
+      background: #00b0ff;
+    }
+
+    .step.current {
+      box-shadow: 0 0 10px 4px #ff5722;
+      transform: scale(1.2);
+    }
+
+    .play-button, .stop-button {
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 25px;
+      color: #fff;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .play-button {
+      background: #ff5722;
+    }
+    .play-button:hover {
+      background: #e64a19;
+    }
+
+    .stop-button {
+      background: #9c27b0;
+    }
+    .stop-button:hover {
+      background: #7b1fa2;
+    }
+	
+	 .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 10px 15px;
+      color: #fff;
+      background-color: var(--button-color, #00b0ff);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-button:hover {
+      opacity: 0.8;
+    }
+
+    .back-button .emoji {
+      font-size: 1.2em;
+    }
+
+    /* Mobile View */
+    @media (max-width: 768px) {
+      .vinyl {
+        width: calc(140%);
+        height: calc(140%);
+      }
+
+      .content {
+        width: 95%;
+      }
+
+      .step {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sfondo con immagini random -->
+<script>
+
+	
+  // Funzione per generare colori casuali
+  function randomColor() {
+    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  }
+
+  // Imposta un colore casuale per il pulsante Back
+  document.documentElement.style.setProperty('--button-color', randomColor());
+
+
+
+  const NUM_IMAGES = 100;
+  const imgSrc = 'dammi70euro.png';
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  for (let i = 0; i < NUM_IMAGES; i++) {
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.classList.add('random-image');
+    const x = Math.random() * screenWidth;
+    const y = Math.random() * screenHeight;
+    const size = 80 + Math.random() * 50;
+    img.style.width = size + 'px';
+    img.style.height = 'auto';
+    img.style.left = x + 'px';
+    img.style.top = y + 'px';
+    img.style.position = 'absolute';
+    document.body.appendChild(img);
+  }
+
+  // Aggiorna dinamicamente la dimensione del vinile
+  function updateVinylSize() {
+    const drumMachine = document.querySelector('.drum-machine');
+    const vinyl = document.querySelector('.vinyl');
+    if (drumMachine && vinyl) {
+      const drumWidth = drumMachine.offsetWidth;
+      const vinylDiameter = drumWidth * 1.2; // 20% maggiore
+      vinyl.style.width = `${vinylDiameter}px`;
+      vinyl.style.height = `${vinylDiameter}px`;
+    }
+  }
+
+  window.addEventListener('resize', updateVinylSize);
+  document.addEventListener('DOMContentLoaded', updateVinylSize);
+</script>
+
+<!-- Disco Vinile -->
+<div class="vinyl" id="vinyl">
+  <img src="dammi70euro.png" alt="Vinyl" class="vinyl-image" />
+</div>
+
+
+
+<!-- Contenuto -->
+<div class="content">
+  <h1>Drum Machine Generativa</h1>
+  <h2>Ritmi Infiniti</h2>
+
+  <!-- Controlli: slider tempo e pulsanti step -->
+  <div class="controls">
+    <div class="tempo-slider-container">
+      <label for="tempoSlider">Tempo:</label>
+      <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
+      <span class="tempo-value" id="tempoValue">120 BPM</span>
+    </div>
+    <div class="steps-buttons">
+      <button data-steps="16">16</button>
+      <button data-steps="32">32</button>
+      <button data-steps="64">64</button>
+    </div>
+  </div>
+
+  <!-- Drum Machine -->
+  <div class="drum-machine" id="drumMachine"></div>
+	
+
+  
+  
+  <!-- Pulsante Back -->
+<button class="back-button" onclick="window.location.href='index.html'">
+  <span class="emoji">🛏️</span>
+  Vai a Letto
+</button>
+  
+  
+  
+  <!-- Pulsanti Play / Stop -->
+  <button class="play-button" id="playBtn">Play</button>
+  <button class="stop-button" id="stopBtn">Stop</button>
+</div>
+
+<!-- AUDIO -->
+<audio id="kickAudio" src="drums/kick.wav" preload="auto"></audio>
+<audio id="snareAudio" src="drums/snare.wav" preload="auto"></audio>
+<audio id="hihatAudio" src="drums/hihat.wav" preload="auto"></audio>
+
+<script src="drummachine.js"></script>
+<script src="synt.js"></script>
+
+</body>
+</html>
